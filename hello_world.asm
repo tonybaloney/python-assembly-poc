@@ -9,28 +9,16 @@
 %endif
 extern _printf
 section .data
-    msg db "hello, world", 0x0A
-    .len equ $ - msg
-    NL db 0xa
-    meaningoflife db 42
-    fmtstr db "The meaning of life is %d", 10, 0
-section .bss
-    letters resb 26
+    fmtstr db "The meaning of life is %10d",10, 0
 section .text
     global _main
 _main:
     push rbp ; prolog
     mov rbp, rsp
 
-    mov rax, SYSCALL_WRITE
-    mov rdi, 1
-    mov rsi, msg
-    mov rdx, msg.len
-    syscall
-
     mov rax, 0
     mov rdi, fmtstr
-    mov rsi, meaningoflife
+    mov rsi, 42
     call _printf
 
     mov rsp, rbp ; epilog
