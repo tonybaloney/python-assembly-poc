@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(mucking_around C)
 project(test ASM_NASM)
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_FLAGS, "${CMAKE_C_FLAGS} -mpreferred-stack-boundary=2 -fno-stack-protector")
 
