@@ -15,10 +15,9 @@ section .data
     fmt0 db "No input string provided", 10, 0
     fmt1 db "The input: %s", 10, 0
     fmt2 db "The input length: %d", 10, 0
-    fmt3 db "The Reverse-ROT13 string: %s", 10, 0
+    fmt3 db "%s", 10, 0
 section .bss
-    input resq 1000
-    output resq 1000
+    output resb 1000
     inputLen resb 1
 section .text
     global ENTRYPOINT
@@ -33,33 +32,25 @@ ENTRYPOINT:
     cmp r9, 1
     jbe bad_exit ; quit if argc <= 1
 
-    mov rdi, fmt1
-    mov rsi, qword [ r10 + 8 ]
-    mov [input], rsi
-    mov rax, 0
-    call PRINTF
+    mov r14, qword [ r10 + 8 ] ; store arg as r14 and use throughout
 
-    mov rdi, [input] ; calculate length of input
+    mov rdi, r14 ; calculate length of input
     call pstrlen ; run internal function
     dec rax ; ignore the null-terminator at the end of the string
     mov [inputLen], rax ; store the string length as inputLen
 
-    mov rdi, fmt2
-    mov rsi, [inputLen]
-    mov rax, 0
-    call PRINTF ; print length of test string
-
     xor rax, rax
-    mov rbx, input
+    mov rbx, r14
     mov rcx, [inputLen]
     mov r12, 0
 
     readloop:
-        mov rax, qword [rbx + r12] ; load next character
+        mov al, byte [rbx + r12] ; load next character
         push rax
         inc r12
         loop readloop
 
+    xor rax, rax
     mov rbx, output
     mov rcx, [inputLen]
     mov r12, 0
@@ -68,8 +59,8 @@ ENTRYPOINT:
         pop rax
         mov rdx, rax
         add rdx, 13 ; Shift right 13
-        cmp rdx, 81 ; Shift back 26 if beyond Z
-        jle .noshift
+        cmp rdx, 91 ; Shift back 26 if beyond Z
+        jl .noshift
         sub rdx, 26
         .noshift:
 
