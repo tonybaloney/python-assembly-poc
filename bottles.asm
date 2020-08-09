@@ -55,8 +55,6 @@ mov rdi, endstr
     mov rsp, rbp ; epilog
     pop rbp
 
-
-
     mov rax, SYSCALL_EXIT
     mov rdi, 0
     syscall

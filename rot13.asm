@@ -14,10 +14,12 @@ extern PRINTF
 section .data
     fmt0 db "No input string provided", 10, 0
     fmt1 db "The input: %s", 10, 0
-    fmt2 db "The Reverse-ROT13 string: %s", 10, 0
+    fmt2 db "The input length: %d", 10, 0
+    fmt3 db "The Reverse-ROT13 string: %s", 10, 0
 section .bss
-    input resq 1
-    inputLen resq 1
+    input resq 1000
+    output resq 1000
+    inputLen resb 1
 section .text
     global ENTRYPOINT
 
@@ -37,37 +39,49 @@ ENTRYPOINT:
     mov rax, 0
     call PRINTF
 
-    mov rdi, input
-    call pstrlen
-    mov [inputLen], rax
+    mov rdi, [input] ; calculate length of input
+    call pstrlen ; run internal function
+    dec rax ; ignore the null-terminator at the end of the string
+    mov [inputLen], rax ; store the string length as inputLen
 
-    xor rax, rax ; clear rax
-    mov r12, 0 ; r12 is counter
+    mov rdi, fmt2
+    mov rsi, [inputLen]
+    mov rax, 0
+    call PRINTF ; print length of test string
+
+    xor rax, rax
     mov rbx, input
-    mov rcx, inputLen
+    mov rcx, [inputLen]
+    mov r12, 0
 
-    pushloop:
-        mov al, byte [rbx+r12] ; move char to stack
+    readloop:
+        mov rax, qword [rbx + r12] ; load next character
         push rax
-        inc r12 ; inc position
-        loop pushloop
+        inc r12
+        loop readloop
 
-    mov rbx, input
-    mov rcx, inputLen
+    mov rbx, output
+    mov rcx, [inputLen]
     mov r12, 0
 
     poploop:
         pop rax
-        mov dl, al
-        add dl, 13
-        mov byte [rbx + r12], dl
+        mov rdx, rax
+        add rdx, 13 ; Shift right 13
+        cmp rdx, 81 ; Shift back 26 if beyond Z
+        jle .noshift
+        sub rdx, 26
+        .noshift:
+
+        mov qword [rbx + r12], rdx
         inc r12 ; inc cursor
+
         loop poploop
 
-    mov byte [rbx + r12], 0 ; Add null-terminator
+    mov qword [rbx + r12], 0 ; Add null-terminator
 
-    mov rdi, fmt2
-    mov rsi, input
+    mov rdi, fmt3
+    mov rsi, output
     mov rax, 0
     call PRINTF
 
