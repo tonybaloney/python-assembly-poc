@@ -1,14 +1,12 @@
 default rel
 %ifdef      MACOS
-    %define     ENTRYPOINT      _main
     %define     SYSCALL_WRITE   0x2000004
     %define     SYSCALL_EXIT    0x2000001
 %else
-    %define     ENTRYPOINT      start
     %define     SYSCALL_WRITE   1
     %define     SYSCALL_EXIT    60
 %endif
-extern _printf
+extern printf
 section .data
     fmtstr db "%d green bottles, hanging on the wall.",10, 0
     linkstr db "and if one green bottle, should accidentally fall. there'll be", 10, 0
@@ -18,9 +16,9 @@ section .data
 section .bss
     bottles resq 1
 section .text
-    global _main
+    global main
 
-_main:
+main:
     push rbp ; prolog
     mov rbp, rsp
 
@@ -32,15 +30,15 @@ bloop:
     mov rcx, [bottles]
     mov rdi, fmtstr
     mov rsi, rcx
-    call _printf
+    call printf
 
     mov rcx, [bottles]
     mov rdi, fmtstr
     mov rsi, rcx
-    call _printf
+    call printf
 
     mov rdi, linkstr
-    call _printf
+    call printf
 
     mov rdx, [bottles]
     dec rdx
@@ -50,7 +48,7 @@ bloop:
     jmp exit
 exit:
 mov rdi, endstr
-    call _printf
+    call printf
 
     mov rsp, rbp ; epilog
     pop rbp

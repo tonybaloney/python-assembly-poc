@@ -1,16 +1,12 @@
 default rel
 %ifdef      MACOS
-    %define     ENTRYPOINT      _main
-    %define     PRINTF          _printf
     %define     SYSCALL_WRITE   0x2000004
     %define     SYSCALL_EXIT    0x2000001
 %else
-    %define     ENTRYPOINT      start
-    %define     PRINTF          printf
     %define     SYSCALL_WRITE   1
     %define     SYSCALL_EXIT    60
 %endif
-extern PRINTF
+extern printf
 section .data
     fmt0 db "No input string provided", 10, 0
     fmt1 db "The input: %s", 10, 0
@@ -20,9 +16,9 @@ section .bss
     output resb 1000
     inputLen resb 1
 section .text
-    global ENTRYPOINT
+    global main
 
-ENTRYPOINT:
+main:
     push rbp
     mov rbp, rsp ;
 
@@ -74,19 +70,23 @@ ENTRYPOINT:
     mov rdi, fmt3
     mov rsi, output
     mov rax, 0
-    call PRINTF
+    call printf
 
-mov rsp, rsp
-pop rbp
-ret
+    mov rsp, rsp
+    pop rbp
+    mov rax, SYSCALL_EXIT
+    mov rdi, 0
+    syscall
 
 bad_exit:
     mov rdi, fmt0
     mov rax, 0
-    call PRINTF
+    call printf
     mov rsp, rsp
     pop rbp
-    ret
+    mov rax, SYSCALL_EXIT
+    mov rdi, 1
+    syscall
 
 pstrlen:
     push rbp;
