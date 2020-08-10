@@ -4,6 +4,7 @@ project(math_test C)
 project(rect ASM_NASM)
 project(bottles ASM_NASM)
 project(rot13 ASM_NASM)
+project(pymult ASM_NASM)
 
 SET(ASM_DIALECT "_NASM")
 SET(CMAKE_ASM${ASM_DIALECT}_SOURCE_FILE_EXTENSIONS nasm;nas;asm)
@@ -39,6 +40,10 @@ set_target_properties(rot13 PROPERTIES LINKER_LANGUAGE NASM)
 add_library(rect SHARED rect.asm)
 set_target_properties(rect PROPERTIES LINKER_LANGUAGE NASM )
 
+add_library(pymult STATIC pymult.asm)
+set_target_properties(pymult PROPERTIES LINKER_LANGUAGE NASM )
+
+
 set(CMAKE_NASM_CREATE_SHARED_LIBRARY TRUE)
 set(CMAKE_NASM_CREATE_STATIC_LIBRARY TRUE)
 
@@ -49,7 +54,13 @@ if (APPLE)
             POST_BUILD
             COMMAND gcc -dynamiclib -undefined suppress -flat_namespace *.o -o ${CMAKE_BINARY_DIR}/librect.dylib
             WORKING_DIRECTORY "${rect_BINARY_DIR}/CMakeFiles/rect.dir")
+    add_custom_command(TARGET pymult
+            POST_BUILD
+            COMMAND gcc -dynamiclib -undefined suppress -flat_namespace *.o -o ${CMAKE_BINARY_DIR}/pymult.so
+            WORKING_DIRECTORY "${rect_BINARY_DIR}/CMakeFiles/pymult.dir")
 endif (APPLE)
+
+target_link_libraries(pymult Python)
 
 add_dependencies(math_test rect)
 target_link_libraries(math_test rect)
