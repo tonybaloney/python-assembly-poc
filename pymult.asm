@@ -15,17 +15,19 @@ section .data
         m_doc:	resq	1
         m_size:	resq	1
         m_methods:	resq	1
-        m_slots: resb	6
-        m_traverse: resb	6
-        m_clear: resb	6
-        m_free: resb	6
+        m_slots: resq	1
+        m_traverse: resq	1
+        m_clear: resq	1
+        m_free: resq	1
     endstruc
 
     struc methoddef
         ml_name:  resq 1
         ml_meth: resq 1
-        ml_flags: resb 1
+        ml_flags: resd 1
         ml_doc: resq 1
+        ml_term: resq 1
+        ml_term2: resq 1
     endstruc
 
 section .bss
@@ -35,19 +37,70 @@ global PyInit_pymult
 global PyMult_multiply
 
 PyMult_multiply:
+    ;
+    ; pymult.multiply (a, b)
+    ; Multiplies a and b
+    ; Returns value as PyLong(PyObject*)
+    extern PyLong_FromLong
+    extern PyLong_AsLong
+    extern PyArg_ParseTuple
+    section .data
+        parseStr db "LL", 0
+    section .bss
+        result resq 1 ; long result
+        x resq 1 ; long input
+        y resq 1 ; long input
     section .text
         push rbp ; preserve stack pointer
         mov rbp, rsp
+        push rbx
+        sub rsp, 0x18
+
+        mov rdi, rsi ; args
+        lea rsi, qword[parseStr]
+        xor ebx, ebx ; clear the ebx
+        lea rdx, qword[x] ; set the address of x as the 2nd arg
+        lea rcx, qword[y] ; set the address of y as the 3rd arg
+
+        xor eax, eax ; clear eax
+        call PyArg_ParseTuple
+
+        test eax, eax ; if PyArg_ParseTuple is NULL, exit quickly
+        je badinput
+
+        mov rax, [x]
+        imul qword[y]
+        mov [result], rax
+
+        mov edi, [result]
+        call PyLong_FromLong
 
         mov rsp, rbp ; reinit stack pointer
         pop rbp
         ret
+
+        badinput:
+            mov rax, rbx
+            add rsp, 0x18
+            pop rbx
+            pop rbp
+            ret
 
 PyInit_pymult:
     extern PyModule_Create2
     section .data
         method1name db "multiply", 0
         method1doc db "Multiply two values", 0
+
+        _method1def:
+            istruc methoddef
+                at ml_name, dq method1name
+                at ml_meth, dq PyMult_multiply
+                at ml_flags, dd 0x0001 ; METH_VARARGS
+                at ml_doc, dq 0x0
+                at ml_term, dq 0x0 ; Method defs are terminated by two NULL values,
+                at ml_term2, dq 0x0 ; equivalent to qword[0x0], qword[0x0]
+            iend
         _moduledef:
             istruc moduledef
                 at m_object_head_size, dq  1
@@ -58,31 +111,18 @@ PyInit_pymult:
                 at m_name, dq modulename
                 at m_doc, dq   docstring
                 at m_size, dq 2
-                at m_methods, dq 0x0
-                at m_slots, db 0
-                at m_traverse, db 0
-                at m_clear, db 0
-                at m_free, db 0
+                at m_methods, dq _method1def
+                at m_slots, dq 0
+                at m_traverse, dq 0
+                at m_clear, dq 0
+                at m_free, dq 0
             iend
-        _method1def:
-            istruc methoddef
-                at ml_name, dq method1name
-                at ml_meth, dq 0x0
-                at ml_flags, db 0x0001 ; METH_VARARGS
-                at ml_doc, dq method1doc
-            iend
-
     section .text
         push rbp ; preserve stack pointer
         mov rbp, rsp
 
         lea rdi, qword[_moduledef] ; def PyModuleDef
-
-        ;mov r10, qword[_method1def]
-        ;mov [_moduledef + m_methods], r10
-
         mov esi, 0x3f5 ; 1033 - module_api_version
-
         call PyModule_Create2
 
         mov rsp, rbp ; reinit stack pointer
