@@ -4,9 +4,10 @@ section .data
     docstring db "Simple Multiplication function", 0
 
     struc   moduledef
-        ;moduledef_base
+        ;pyobject header
         m_object_head_size: resq 1
         m_object_head_type: resq 1
+        ;pymoduledef_base
         m_init: resq 1
         m_index: resq 1
         m_copy: resq 1
@@ -45,34 +46,34 @@ PyMult_multiply:
     extern PyLong_AsLong
     extern PyArg_ParseTuple
     section .data
-        parseStr db "LL", 0
+        parseStr db "LL", 0 ; convert arguments to Long, Long
     section .bss
         result resq 1 ; long result
-        x resq 1 ; long input
-        y resq 1 ; long input
+        x resq 1      ; long input
+        y resq 1      ; long input
     section .text
         push rbp ; preserve stack pointer
         mov rbp, rsp
         push rbx
         sub rsp, 0x18
 
-        mov rdi, rsi ; args
-        lea rsi, qword[parseStr]
-        xor ebx, ebx ; clear the ebx
-        lea rdx, qword[x] ; set the address of x as the 2nd arg
-        lea rcx, qword[y] ; set the address of y as the 3rd arg
+        mov rdi, rsi                ; args
+        lea rsi, qword[parseStr]    ; Parse args to LL
+        xor ebx, ebx                ; clear the ebx
+        lea rdx, qword[x]           ; set the address of x as the 2nd arg
+        lea rcx, qword[y]           ; set the address of y as the 3rd arg
 
-        xor eax, eax ; clear eax
-        call PyArg_ParseTuple
+        xor eax, eax                ; clear eax
+        call PyArg_ParseTuple       ; Parse Args via C-API
 
-        test eax, eax ; if PyArg_ParseTuple is NULL, exit quickly
+        test eax, eax               ; if PyArg_ParseTuple is NULL, exit with error
         je badinput
 
-        mov rax, [x]
+        mov rax, [x]                ; multiply x and y
         imul qword[y]
         mov [result], rax
 
-        mov edi, [result]
+        mov edi, [result]           ; convert result to PyLong
         call PyLong_FromLong
 
         mov rsp, rbp ; reinit stack pointer
@@ -105,25 +106,25 @@ PyInit_pymult:
             istruc moduledef
                 at m_object_head_size, dq  1
                 at m_object_head_type, dq 0x0  ; null
-                at m_init, dq 0x0  ; null
-                at m_index, dq 0 ; zero
-                at m_copy, dq 0x0 ; null
+                at m_init, dq 0x0       ; null
+                at m_index, dq 0        ; zero
+                at m_copy, dq 0x0       ; null
                 at m_name, dq modulename
                 at m_doc, dq   docstring
                 at m_size, dq 2
                 at m_methods, dq _method1def
-                at m_slots, dq 0
-                at m_traverse, dq 0
-                at m_clear, dq 0
-                at m_free, dq 0
+                at m_slots, dq 0    ; null- no slots
+                at m_traverse, dq 0 ; null
+                at m_clear, dq 0    ; null - no custom clear
+                at m_free, dq 0     ; null - no custom free()
             iend
     section .text
-        push rbp ; preserve stack pointer
+        push rbp                    ; preserve stack pointer
         mov rbp, rsp
 
-        lea rdi, qword[_moduledef] ; def PyModuleDef
-        mov esi, 0x3f5 ; 1033 - module_api_version
-        call PyModule_Create2
+        lea rdi, qword[_moduledef]  ; load module def
+        mov esi, 0x3f5              ; 1033 - module_api_version
+        call PyModule_Create2       ; create module, leave return value in register as return result
 
         mov rsp, rbp ; reinit stack pointer
         pop rbp
