@@ -1,4 +1,5 @@
 default rel
+bits 64
 section .data
     modulename db "pymult", 0
     docstring db "Simple Multiplication function", 0
