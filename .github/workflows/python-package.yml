@@ -40,7 +40,7 @@ jobs:
     steps:
     - name: Install NASM
       run: |
-        brew install -y nasm
+        brew install nasm
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
