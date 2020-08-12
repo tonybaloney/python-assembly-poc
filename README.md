@@ -12,7 +12,8 @@ Demonstrates:
  - How to register a module from assembly
  - How to create a method definition in assembly
  - How to write back to the Python stack using the dynamic module loader
- 
+ - How to package a NASM/Assembly Python extension with distutils
+
 The simple proof-of-concept function takes 2 parameters,
 
 ```default

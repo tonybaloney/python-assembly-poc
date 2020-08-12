@@ -31,10 +31,13 @@ class NasmCompiler(UnixCCompiler) :
 
     def _get_cc_args(self, pp_opts, debug, before):
         if sys.platform == 'darwin':
+            # Fix the symbols on macOS
             cc_args = pp_opts + ["-f macho64" ,"-DMACOS", "--prefix=_"]
         else:
+            # Use 64-bit elf format for Linux
             cc_args = pp_opts + ["-f elf64"]
         if debug:
+            # Debug symbols from NASM
             cc_args[:0] = ['-g']
         if before:
             cc_args[:0] = before
@@ -45,6 +48,7 @@ class NasmCompiler(UnixCCompiler) :
              library_dirs=None, runtime_library_dirs=None,
              export_symbols=None, debug=0, extra_preargs=None,
              extra_postargs=None, build_temp=None, target_lang=None):
+        # Make sure libpython gets linked
         if not self.runtime_library_dirs:
             self.runtime_library_dirs.append(get_config_var('LIBDIR'))
         if not self.libraries:
