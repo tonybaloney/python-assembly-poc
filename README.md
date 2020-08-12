@@ -1,5 +1,8 @@
 # Building Python Extension Modules in Assembly
 
+![GitHub Actions](https://github.com/tonybaloney/python-assembly-poc/workflows/Python%20package/badge.svg)
+
+
 This repository is a proof-of-concept to demonstrate how you can create a Python Extension in 
 100% assembly.
 
