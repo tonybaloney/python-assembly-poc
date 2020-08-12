@@ -52,7 +52,7 @@ class NasmCompiler(UnixCCompiler) :
         if not self.runtime_library_dirs:
             self.runtime_library_dirs.append(get_config_var('LIBDIR'))
         if not self.libraries:
-            libraries = ["python3.8"]
+            libraries = ["python" + get_config_var("LDVERSION")]
 
         return super().link(target_desc, objects,
                             output_filename, output_dir, libraries,
