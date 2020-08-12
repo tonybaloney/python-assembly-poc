@@ -5,7 +5,7 @@ This repository is a proof-of-concept to demonstrate how you can create a Python
 
 Demonstrates: 
 
- - How to write a Python module in pure Python
+ - How to write a Python module in pure assembly
  - How to write a function in pure assembly and call it from Python with Python objects
  - How to call the C API to create a PyObject and parse PyTuple (arguments) into raw pointers
  - How to pass data back into Python
