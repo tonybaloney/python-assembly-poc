@@ -59,10 +59,10 @@ PyMult_multiply:
         sub rsp, 0x18
 
         mov rdi, rsi                ; args
-        lea rsi, qword[parseStr]    ; Parse args to LL
+        lea rsi, [parseStr]    ; Parse args to LL
         xor ebx, ebx                ; clear the ebx
-        lea rdx, qword[x]           ; set the address of x as the 2nd arg
-        lea rcx, qword[y]           ; set the address of y as the 3rd arg
+        lea rdx, [x]           ; set the address of x as the 3rd arg
+        lea rcx, [y]           ; set the address of y as the 4th arg
 
         xor eax, eax                ; clear eax
         call PyArg_ParseTuple       ; Parse Args via C-API
@@ -123,7 +123,7 @@ PyInit_pymult:
         push rbp                    ; preserve stack pointer
         mov rbp, rsp
 
-        lea rdi, qword[_moduledef]  ; load module def
+        lea rdi, [_moduledef]  ; load module def
         mov esi, 0x3f5              ; 1033 - module_api_version
         call PyModule_Create2       ; create module, leave return value in register as return result
 
