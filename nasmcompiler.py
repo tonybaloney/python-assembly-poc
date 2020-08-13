@@ -63,3 +63,6 @@ class NasmCompiler(UnixCCompiler) :
                             library_dirs, runtime_library_dirs,
                             export_symbols, debug, extra_preargs,
                             extra_postargs, build_temp, target_lang)
+
+    def runtime_library_dir_option(self, dir):
+        return "-L" + dir
