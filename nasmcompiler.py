@@ -57,7 +57,8 @@ class NasmCompiler(UnixCCompiler) :
             self.runtime_library_dirs.append(get_config_var('LIBDIR'))
         if not self.libraries:
             libraries = ["python" + get_config_var("LDVERSION")]
-
+        if not extra_preargs:
+            extra_postargs.append("-fPIC")
         return super().link(target_desc, objects,
                             output_filename, output_dir, libraries,
                             library_dirs, runtime_library_dirs,
