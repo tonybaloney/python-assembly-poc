@@ -61,7 +61,7 @@ class NasmCompiler(UnixCCompiler) :
             extra_postargs.append("-no-pie")
         if not extra_preargs:
             extra_preargs = []
-        extra_preargs.append("-nostartfiles")
+
         return super().link(target_desc, objects,
                             output_filename, output_dir, libraries,
                             library_dirs, runtime_library_dirs,
