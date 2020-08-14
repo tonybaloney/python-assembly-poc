@@ -39,7 +39,7 @@ class NasmCompiler(UnixCCompiler) :
             cc_args = pp_opts + ["-f macho64","-DMACOS","--prefix=_"]
         else:
             # Use 64-bit elf format for Linux
-            cc_args = pp_opts + ["-no-pie -f elf64"]
+            cc_args = pp_opts + ["-f elf64"]
         if debug:
             # Debug symbols from NASM
             cc_args[:0] = ['-g']
@@ -57,8 +57,8 @@ class NasmCompiler(UnixCCompiler) :
             self.runtime_library_dirs.append(get_config_var('LIBDIR'))
         if not self.libraries:
             libraries = ["python" + get_config_var("LDVERSION")]
-        if not extra_preargs:
-            extra_postargs.append("-fPIC")
+        if sys.platform != 'darwin':
+            extra_postargs.append("-no-pie")
         return super().link(target_desc, objects,
                             output_filename, output_dir, libraries,
                             library_dirs, runtime_library_dirs,
