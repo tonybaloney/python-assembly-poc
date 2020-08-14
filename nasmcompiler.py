@@ -59,6 +59,9 @@ class NasmCompiler(UnixCCompiler) :
             libraries = ["python" + get_config_var("LDVERSION")]
         if sys.platform != 'darwin':
             extra_postargs.append("-no-pie")
+        if not extra_preargs:
+            extra_preargs = []
+        extra_preargs.append("-nostartfiles")
         return super().link(target_desc, objects,
                             output_filename, output_dir, libraries,
                             library_dirs, runtime_library_dirs,
@@ -66,4 +69,7 @@ class NasmCompiler(UnixCCompiler) :
                             extra_postargs, build_temp, target_lang)
 
     def runtime_library_dir_option(self, dir):
-        return "-L" + dir
+        if sys.platform == "darwin":
+            return "-L" + dir
+        else:
+            return "-Wl,-R" + dir
