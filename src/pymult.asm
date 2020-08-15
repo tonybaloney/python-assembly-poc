@@ -1,13 +1,13 @@
 default rel
 bits 64
-%ifdef MACOS
+%ifdef NOPIE
     %define PYARG_PARSETUPLE PyArg_ParseTuple
     %define PYLONG_FROMLONG PyLong_FromLong
     %define PYMODULE_CREATE2 PyModule_Create2
 %else
-    %define PYARG_PARSETUPLE [rel PyArg_ParseTuple wrt ..plt]
-    %define PYLONG_FROMLONG [rel PyLong_FromLong wrt ..plt]
-    %define PYMODULE_CREATE2 [rel PyModule_Create2 wrt ..plt]
+    %define PYARG_PARSETUPLE PyArg_ParseTuple wrt ..plt
+    %define PYLONG_FROMLONG PyLong_FromLong wrt ..plt
+    %define PYMODULE_CREATE2 PyModule_Create2 wrt ..plt
 %endif
 section .data
     modulename db "pymult", 0

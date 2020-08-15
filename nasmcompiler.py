@@ -36,7 +36,7 @@ class NasmCompiler(UnixCCompiler) :
     def _get_cc_args(self, pp_opts, debug, before):
         if sys.platform == 'darwin':
             # Fix the symbols on macOS
-            cc_args = pp_opts + ["-f macho64","-DMACOS","--prefix=_"]
+            cc_args = pp_opts + ["-f macho64","-DNOPIE","--prefix=_"]
         else:
             # Use 64-bit elf format for Linux
             cc_args = pp_opts + ["-f elf64"]
