@@ -3,8 +3,6 @@
 
 import io
 import os
-import platform
-import re
 from glob import glob
 from os.path import basename
 from os.path import dirname
@@ -12,7 +10,7 @@ from os.path import join
 from os.path import relpath
 from os.path import splitext
 
-from setuptools import Extension, Command
+from setuptools import Extension
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.build_ext import build_ext
@@ -85,7 +83,7 @@ def read(*names, **kwargs):
 
 setup(
     name='pymult',
-    version='0.0.1',
+    version='0.0.2',
     license='BSD-2-Clause',
     description='An example Python package written in x86-64 assembly.',
     long_description= read('README.md'),
@@ -99,7 +97,7 @@ setup(
     zip_safe=False,
     classifiers=[
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: Unix',
