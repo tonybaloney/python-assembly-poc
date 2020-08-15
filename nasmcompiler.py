@@ -57,8 +57,8 @@ class NasmCompiler(UnixCCompiler) :
             self.runtime_library_dirs.append(get_config_var('LIBDIR'))
         if not self.libraries:
             libraries = ["python" + get_config_var("LDVERSION")]
-        if sys.platform != 'darwin':
-            extra_postargs.append("-no-pie")
+        # if sys.platform != 'darwin':
+        #     extra_postargs.append("-no-pie")
         if not extra_preargs:
             extra_preargs = []
 
