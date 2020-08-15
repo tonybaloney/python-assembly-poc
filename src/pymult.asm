@@ -1,5 +1,10 @@
 default rel
 bits 64
+%ifdef MACOS
+    %define PYARG_PARSETUPLE PyArg_ParseTuple
+%else
+    %define PYARG_PARSETUPLE [rel PyArg_ParseTuple wrt ..plt]
+%endif
 section .data
     modulename db "pymult", 0
     docstring db "Simple Multiplication function", 0
@@ -65,7 +70,7 @@ PyMult_multiply:
         lea rcx, [y]           ; set the address of y as the 4th arg
 
         xor eax, eax                ; clear eax
-        call PyArg_ParseTuple       ; Parse Args via C-API
+        call PYARG_PARSETUPLE       ; Parse Args via C-API
 
         test eax, eax               ; if PyArg_ParseTuple is NULL, exit with error
         je badinput
