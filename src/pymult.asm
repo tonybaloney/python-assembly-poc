@@ -2,8 +2,12 @@ default rel
 bits 64
 %ifdef MACOS
     %define PYARG_PARSETUPLE PyArg_ParseTuple
+    %define PYLONG_FROMLONG PyLong_FromLong
+    %define PYMODULE_CREATE2 PyModule_Create2
 %else
     %define PYARG_PARSETUPLE [rel PyArg_ParseTuple wrt ..plt]
+    %define PYLONG_FROMLONG [rel PyLong_FromLong wrt ..plt]
+    %define PYMODULE_CREATE2 [rel PyModule_Create2 wrt ..plt]
 %endif
 section .data
     modulename db "pymult", 0
@@ -80,7 +84,7 @@ PyMult_multiply:
         mov [result], rax
 
         mov edi, [result]           ; convert result to PyLong
-        call PyLong_FromLong
+        call PYLONG_FROMLONG
 
         mov rsp, rbp ; reinit stack pointer
         pop rbp
@@ -130,7 +134,7 @@ PyInit_pymult:
 
         lea rdi, [_moduledef]  ; load module def
         mov esi, 0x3f5              ; 1033 - module_api_version
-        call PyModule_Create2       ; create module, leave return value in register as return result
+        call PYMODULE_CREATE2       ; create module, leave return value in register as return result
 
         mov rsp, rbp ; reinit stack pointer
         pop rbp
