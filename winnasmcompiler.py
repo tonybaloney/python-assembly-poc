@@ -1,75 +1,89 @@
 """
 Distutils doesn't support nasm, so this is a custom compiler for NASM
 """
+from distutils.errors import DistutilsExecError, CompileError
 
 from distutils.msvc9compiler import MSVCCompiler
-from distutils.sysconfig import get_config_var
 import sys
+import os
 
 
 class WinNasmCompiler(MSVCCompiler) :
-    compiler_type = 'nasm'
+    compiler_type = 'winnasm'
     src_extensions = ['.asm']
-    obj_extension = '.obj'
-    language_map = {".asm"   : "asm",}
-    language_order = ["asm"]
-    executables = {'preprocessor' : None,
-               'compiler'     : ["nasm"],
-               'compiler_so'  : ["nasm"],
-               'compiler_cxx' : ["nasm"],
-               'linker_so'    : ["cc", "-shared"],
-               'linker_exe'   : ["cc", "-shared"],
-               'archiver'     : ["ar", "-cr"],
-               'ranlib'       : None,
-               }
+
     def __init__ (self,
                   verbose=0,
                   dry_run=0,
                   force=0):
 
         MSVCCompiler.__init__ (self, verbose, dry_run, force)
-        self.set_executable("compiler", "nasm")
 
-    def _is_gcc(self, compiler_name):
-        return False  # ¯\_(ツ)_/¯
+    def initialize(self, plat_name=None):
+        # super().initialize(plat_name=plat_name)
+        self.cc = self.find_exe("nasm.exe")
+        self.linker = self.find_exe("link.exe")
+        self.lib = self.find_exe("lib.exe")
+        self.rc = self.find_exe("rc.exe")   # resource compiler
+        self.mc = self.find_exe("mc.exe")   # message compiler
 
-    def _get_cc_args(self, pp_opts, debug, before):
-        if sys.platform == 'darwin':
-            # Fix the symbols on macOS
-            cc_args = pp_opts + ["-f macho64","-DNOPIE","--prefix=_"]
-        elif sys.platform == "win32":
-            cc_args = pp_opts + ["-f win64", "-DWINDOWS", "-DNOPIE"]
-        else:
-            # Use 64-bit elf format for Linux
-            cc_args = pp_opts + ["-f elf64"]
-        if debug:
-            # Debug symbols from NASM
-            cc_args[:0] = ['-g']
-        if before:
-            cc_args[:0] = before
-        return cc_args
+        self.compile_options = ["-f win64", "-DWINDOWS", "-DNOPIE"]
+        self.compile_options_debug = ["-f win64", "-g", "-DWINDOWS", "-DNOPIE"]
+        self.ldflags_shared = ['/DLL', '/nologo', '/INCREMENTAL:NO']
+        self.ldflags_shared_debug = ['/DLL', '/nologo', '/INCREMENTAL:NO', '/DEBUG']
+        self.ldflags_static = ['/nologo']
+        self.initialized = True
 
     def link(self, target_desc, objects,
              output_filename, output_dir=None, libraries=None,
              library_dirs=None, runtime_library_dirs=None,
              export_symbols=None, debug=0, extra_preargs=None,
              extra_postargs=None, build_temp=None, target_lang=None):
-        # Make sure libpython gets linked
-        if not self.runtime_library_dirs:
-            if sys.platform == 'win32':
-                self.runtime_library_dirs.append(get_config_var('LIBDEST'))
-            else:
-                self.runtime_library_dirs.append(get_config_var('LIBDIR'))
-        if not self.libraries and sys.platform in ('linux', 'darwin'):
-            libraries = ["python" + get_config_var("LDVERSION")]
-        if not extra_preargs:
-            extra_preargs = []
 
         return super().link(target_desc, objects,
                             output_filename, output_dir, libraries,
                             library_dirs, runtime_library_dirs,
                             export_symbols, debug, extra_preargs,
                             extra_postargs, build_temp, target_lang)
+    
+    def compile(self, sources,
+                output_dir=None, macros=None, include_dirs=None, debug=0,
+                extra_preargs=None, extra_postargs=None, depends=None):
+
+        if not self.initialized:
+            self.initialize()
+        compile_info = self._setup_compile(output_dir, macros, include_dirs,
+                                           sources, depends, extra_postargs)
+        macros, objects, extra_postargs, pp_opts, build = compile_info
+
+        compile_opts = extra_preargs or []
+
+        if debug:
+            compile_opts.extend(self.compile_options_debug)
+        else:
+            compile_opts.extend(self.compile_options)
+
+        for obj in objects:
+            try:
+                src, ext = build[obj]
+            except KeyError:
+                continue
+            if debug:
+                # pass the full pathname to MSVC in debug mode,
+                # this allows the debugger to find the source file
+                # without asking the user to browse for it
+                src = os.path.abspath(src)
+
+            input_opt =  src
+            output_opt = "-o" + obj
+            try:
+                self.spawn([self.cc] + compile_opts + pp_opts +
+                           [input_opt, output_opt] +
+                           extra_postargs)
+            except DistutilsExecError as msg:
+                raise CompileError(msg)
+
+        return objects
 
     def runtime_library_dir_option(self, dir):
         if sys.platform == "darwin":
