@@ -15,8 +15,6 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.build_ext import build_ext
 from distutils.sysconfig import customize_compiler
-from nasmcompiler import NasmCompiler
-from winnasmcompiler import WinNasmCompiler
 
 
 class NasmBuildCommand(build_ext):
@@ -29,8 +27,10 @@ class NasmBuildCommand(build_ext):
                 self.libraries.extend(build_clib.get_library_names() or [])
                 self.library_dirs.append(build_clib.build_clib)
             if sys.platform == "win32":
+                from winnasmcompiler import WinNasmCompiler
                 self.compiler = WinNasmCompiler(verbose=True)
             else:
+                from nasmcompiler import NasmCompiler
                 self.compiler = NasmCompiler(verbose=True)
             customize_compiler(self.compiler)
 
