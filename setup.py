@@ -9,13 +9,14 @@ from os.path import dirname
 from os.path import join
 from os.path import relpath
 from os.path import splitext
-
+import sys
 from setuptools import Extension
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.build_ext import build_ext
 from distutils.sysconfig import customize_compiler
 from nasmcompiler import NasmCompiler
+from winnasmcompiler import WinNasmCompiler
 
 
 class NasmBuildCommand(build_ext):
@@ -27,12 +28,12 @@ class NasmBuildCommand(build_ext):
                 build_clib = self.get_finalized_command('build_clib')
                 self.libraries.extend(build_clib.get_library_names() or [])
                 self.library_dirs.append(build_clib.build_clib)
-            self.compiler = NasmCompiler(verbose=True)
+            if sys.platform == "win32":
+                self.compiler = WinNasmCompiler(verbose=True)
+            else:
+                self.compiler = NasmCompiler(verbose=True)
             customize_compiler(self.compiler)
 
-            # incase someone tries.
-            if os.name == 'nt':
-                raise NotImplementedError("Windows support not implemented for NASM")
 
             if self.include_dirs is not None:
                 self.compiler.set_include_dirs(self.include_dirs)

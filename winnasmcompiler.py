@@ -2,12 +2,12 @@
 Distutils doesn't support nasm, so this is a custom compiler for NASM
 """
 
-from distutils.unixccompiler import UnixCCompiler
+from distutils.msvc9compiler import MSVCCompiler
 from distutils.sysconfig import get_config_var
 import sys
 
 
-class NasmCompiler(UnixCCompiler) :
+class WinNasmCompiler(MSVCCompiler) :
     compiler_type = 'nasm'
     src_extensions = ['.asm']
     obj_extension = '.obj'
@@ -27,7 +27,7 @@ class NasmCompiler(UnixCCompiler) :
                   dry_run=0,
                   force=0):
 
-        UnixCCompiler.__init__ (self, verbose, dry_run, force)
+        MSVCCompiler.__init__ (self, verbose, dry_run, force)
         self.set_executable("compiler", "nasm")
 
     def _is_gcc(self, compiler_name):
@@ -37,6 +37,8 @@ class NasmCompiler(UnixCCompiler) :
         if sys.platform == 'darwin':
             # Fix the symbols on macOS
             cc_args = pp_opts + ["-f macho64","-DNOPIE","--prefix=_"]
+        elif sys.platform == "win32":
+            cc_args = pp_opts + ["-f win64", "-DWINDOWS", "-DNOPIE"]
         else:
             # Use 64-bit elf format for Linux
             cc_args = pp_opts + ["-f elf64"]
@@ -54,8 +56,11 @@ class NasmCompiler(UnixCCompiler) :
              extra_postargs=None, build_temp=None, target_lang=None):
         # Make sure libpython gets linked
         if not self.runtime_library_dirs:
-            self.runtime_library_dirs.append(get_config_var('LIBDIR'))
-        if not self.libraries:
+            if sys.platform == 'win32':
+                self.runtime_library_dirs.append(get_config_var('LIBDEST'))
+            else:
+                self.runtime_library_dirs.append(get_config_var('LIBDIR'))
+        if not self.libraries and sys.platform in ('linux', 'darwin'):
             libraries = ["python" + get_config_var("LDVERSION")]
         if not extra_preargs:
             extra_preargs = []
@@ -68,6 +73,8 @@ class NasmCompiler(UnixCCompiler) :
 
     def runtime_library_dir_option(self, dir):
         if sys.platform == "darwin":
+            return "-L" + dir
+        elif sys.platform == "win32":
             return "-L" + dir
         else:
             return "-Wl,-R" + dir
