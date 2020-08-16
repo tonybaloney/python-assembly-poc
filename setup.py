@@ -56,6 +56,10 @@ class NasmBuildCommand(build_ext):
 
             self.build_extensions()
         except Exception as e:
+            import traceback
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            print("*** print_tb:")
+            traceback.print_tb(exc_traceback, file=sys.stdout)
             self._unavailable(e)
             self.extensions = []  # avoid copying missing files (it would fail).
 

@@ -20,7 +20,6 @@ class WinNasmCompiler(MSVCCompiler) :
         MSVCCompiler.__init__ (self, verbose, dry_run, force)
 
     def initialize(self, plat_name=None):
-        # super().initialize(plat_name=plat_name)
         self.cc = self.find_exe("nasm.exe")
         self.linker = self.find_exe("link.exe")
         self.lib = self.find_exe("lib.exe")
@@ -74,7 +73,7 @@ class WinNasmCompiler(MSVCCompiler) :
                 # without asking the user to browse for it
                 src = os.path.abspath(src)
 
-            input_opt =  src
+            input_opt = src
             output_opt = "-o" + obj
             try:
                 self.spawn([self.cc] + compile_opts + pp_opts +
