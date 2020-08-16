@@ -4,11 +4,10 @@ Distutils doesn't support nasm, so this is a custom compiler for NASM
 from distutils.errors import DistutilsExecError, CompileError
 
 from distutils.msvc9compiler import MSVCCompiler
-import sys
 import os
 
 
-class WinNasmCompiler(MSVCCompiler) :
+class WinNasmCompiler(MSVCCompiler):
     compiler_type = 'winnasm'
     src_extensions = ['.asm']
 
@@ -17,7 +16,7 @@ class WinNasmCompiler(MSVCCompiler) :
                   dry_run=0,
                   force=0):
 
-        MSVCCompiler.__init__ (self, verbose, dry_run, force)
+        MSVCCompiler.__init__(self, verbose, dry_run, force)
 
     def initialize(self, plat_name=None):
         self.cc = self.find_exe("nasm.exe")
@@ -28,8 +27,8 @@ class WinNasmCompiler(MSVCCompiler) :
 
         self.compile_options = ["-f win64", "-DWINDOWS", "-DNOPIE"]
         self.compile_options_debug = ["-f win64", "-g", "-DWINDOWS", "-DNOPIE"]
-        self.ldflags_shared = ['/DLL', '/nologo', '/INCREMENTAL:NO']
-        self.ldflags_shared_debug = ['/DLL', '/nologo', '/INCREMENTAL:NO', '/DEBUG']
+        self.ldflags_shared = ['/DLL', '/nologo', '/INCREMENTAL:NO', '/NOENTRY']
+        self.ldflags_shared_debug = ['/DLL', '/nologo', '/INCREMENTAL:NO', '/DEBUG', '/NOENTRY']
         self.ldflags_static = ['/nologo']
         self.initialized = True
 
@@ -44,7 +43,7 @@ class WinNasmCompiler(MSVCCompiler) :
                             library_dirs, runtime_library_dirs,
                             export_symbols, debug, extra_preargs,
                             extra_postargs, build_temp, target_lang)
-    
+
     def compile(self, sources,
                 output_dir=None, macros=None, include_dirs=None, debug=0,
                 extra_preargs=None, extra_postargs=None, depends=None):
@@ -73,7 +72,7 @@ class WinNasmCompiler(MSVCCompiler) :
                 # without asking the user to browse for it
                 src = os.path.abspath(src)
 
-            input_opt = src
+            input_opt =  src
             output_opt = "-o" + obj
             try:
                 self.spawn([self.cc] + compile_opts + pp_opts +
@@ -83,11 +82,3 @@ class WinNasmCompiler(MSVCCompiler) :
                 raise CompileError(msg)
 
         return objects
-
-    def runtime_library_dir_option(self, dir):
-        if sys.platform == "darwin":
-            return "-L" + dir
-        elif sys.platform == "win32":
-            return "-L" + dir
-        else:
-            return "-Wl,-R" + dir

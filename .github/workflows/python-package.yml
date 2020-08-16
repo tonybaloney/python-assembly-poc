@@ -65,6 +65,8 @@ jobs:
           choco install nasm
       - name: Add NASM to path
         run: echo '::add-path::c:\\Program Files\\NASM'
+      - name: Add VC to path
+        run: echo '::add-path::C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin'
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
