@@ -63,6 +63,8 @@ jobs:
       - name: Install NASM
         run: |
           choco install nasm
+      - name: Add NASM to path
+        run: echo '::add-path::c:\\Program Files\\NASM'
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
