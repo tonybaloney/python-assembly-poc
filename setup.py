@@ -92,6 +92,7 @@ setup(
     license='BSD-2-Clause',
     description='An example Python package written in x86-64 assembly.',
     long_description= read('README.md'),
+    long_description_content_type='text/markdown',
     author='Anthony Shaw',
     author_email='anthonyshaw@apache.org',
     url='https://github.com/tonybaloney/python-assembly-poc',
