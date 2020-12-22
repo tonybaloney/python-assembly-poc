@@ -29,5 +29,5 @@ The simple proof-of-concept function takes 2 parameters,
 
 Just because it can be done.
 
-Also, I want to see if some AVX/AVX2 instructions (high-performance matrix multiplication especially) can be used
-directly from Python.
+Also, I wanted to see if some AVX/AVX2 instructions (high-performance matrix multiplication especially) could be used
+directly from Python (they can!).
